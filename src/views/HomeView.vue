@@ -1,10 +1,15 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 import FeatureCard from '../components/FeatureCard.vue'
 import ProgramCard from '../components/ProgramCard.vue'
+import BaseModal from '../components/BaseModal.vue'
+import MembershipPlans from '../components/MembershipPlans.vue'
 
 const title = "Sergio's GYM"
+
+const router = useRouter()
 
 const isMenuOpen = ref(false)
 
@@ -33,23 +38,47 @@ const programs = [
   },
 ]
 
+const plans = [
+  {
+    name: 'Basic',
+    price: 20,
+    description: 'For people who want access to the gym.',
+    features: ['Gym access', 'Basic equipment', 'Locker access'],
+    popular: false,
+  },
+  {
+    name: 'Pro',
+    price: 35,
+    description: 'For people who want more guidance and benefits.',
+    features: [
+      'Everything in Basic',
+      'Personal training guidance',
+      'Workout plan',
+      'Progress tracking',
+    ],
+    popular: true,
+  },
+  {
+    name: 'Elite',
+    price: 50,
+    description: 'For people who want the complete training experience.',
+    features: ['Everything in Pro', 'Personal trainer', 'Nutrition guidance', 'Priority support'],
+    popular: false,
+  },
+]
+
 function handleLearnMore(program) {
   selectedProgram.value = program
 }
 
-function handleEscape(event) {
-  if (event.key === 'Escape' && selectedProgram.value) {
-    selectedProgram.value = null
-  }
+function handlePlanSelected(plan) {
+  router.push({
+    path: '/signup',
+    query: {
+      plan: plan.name,
+    },
+  })
 }
-
-onMounted(() => {
-  window.addEventListener('keydown', handleEscape)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('keydown', handleEscape)
-})
 </script>
 
 <template>
@@ -158,40 +187,29 @@ onUnmounted(() => {
         />
       </div>
     </div>
-    <div
-      v-if="selectedProgram"
-      @click="selectedProgram = null"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
-    >
-      <div @click.stop class="w-full max-w-lg rounded-2xl bg-white p-8 text-gray-900">
-        <div class="flex items-center justify-between">
-          <h3 class="text-2xl font-bold">
-            {{ selectedProgram.title }}
-          </h3>
-
-          <button
-            @click="selectedProgram = null"
-            class="text-2xl text-gray-500 hover:text-gray-900"
-          >
-            ×
-          </button>
-        </div>
-
-        <p class="mt-6 text-gray-600">
-          {{ selectedProgram.description }}
-        </p>
-
-        <p class="mt-4 font-semibold">Level: {{ selectedProgram.level }}</p>
-
-        <div class="mt-6 flex justify-end">
-          <button
-            @click="selectedProgram = null"
-            class="rounded-lg bg-gray-900 px-6 py-3 font-semibold text-white transition hover:bg-gray-700"
-          >
-            Close
-          </button>
-        </div>
+    <BaseModal :open="selectedProgram !== null" @close="selectedProgram = null">
+      <div class="flex items-center justify-between">
+        <h3 class="text-2xl font-bold">{{ selectedProgram.title }}</h3>
+        <button @click="selectedProgram = null" class="text-2xl text-gray-500 hover:text-gray-900">
+          ×
+        </button>
       </div>
-    </div>
+      <p class="mt-6 text-gray-600">
+        {{ selectedProgram.description }}
+      </p>
+
+      <p class="mt-4 font-semibold">Level: {{ selectedProgram.level }}</p>
+      <div class="mt-6 flex justify-end">
+        <button
+          @click="selectedProgram = null"
+          class="rounded-lg bg-gray-900 px-6 py-3 font-semibold text-white transition hover:bg-gray-700"
+        >
+          Close
+        </button>
+      </div>
+    </BaseModal>
   </section>
+
+  <!--Plans-->
+  <MembershipPlans :plans="plans" @plan-selected="handlePlanSelected" />
 </template>
